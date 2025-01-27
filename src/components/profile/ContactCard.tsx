@@ -176,7 +176,7 @@ export default function ContactCard({ contact, onChange }: Props) {
             onClick={handleSave}
             disabled={!hasChanges}
           >
-            Save
+            Save Changes
           </button>
         </div>
       )}
