@@ -255,46 +255,51 @@ export default function DependentSection({ dependents, onChange }: Props) {
       )}
 
   
-        {!showForm && dependents.length > 0 && (
+{!showForm && dependents.length > 0 && (
+  <div>
+    {dependents.map((dependent) => (
+      <div
+        key={dependent.id}
+        className={`mb-6 p-4 border p-4 rounded-lg ${
+          dependent.isEmergencyContact ? 'border-green-500 bg-green-50' : ''
+        }`}
+      >
+        <div className="flex justify-between items-center">
           <div>
-            {dependents.map((dependent) => (
-              <div key={dependent.id} className="mb-6 p-4 bg-white rounded-lg shadow-sm">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="font-semibold">{dependent.name}</p>
-                    <p className="text-sm text-gray-500">{dependent.relation}</p>
-                    <p className="text-sm text-gray-500">Date of Birth: {dependent.dateOfBirth}</p>
-                    <p className="text-sm text-gray-500">Phone: {dependent.mobileNumber}</p>
-                    <p className="text-sm text-gray-500">Email: {dependent.email}</p>
-                  </div>
-
-                  <div className="flex items-center space-x-4">
-                    <button
-                      onClick={() => handleEdit(dependent)}
-                      className="text-blue-500 hover:text-blue-600 focus:outline-none"
-                    >
-                      <Edit className="h-5 w-5" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(dependent.id)}
-                      className="text-red-500 hover:text-red-600 focus:outline-none"
-                    >
-                      <Trash2 className="h-5 w-5" />
-                    </button>
-                    <button
-                      onClick={() => toggleEmergencyContact(dependent.id)}
-                      className={`${
-                        dependent.isEmergencyContact ? 'text-red-500' : 'text-gray-500'
-                      } hover:text-red-600 focus:outline-none`}
-                    >
-                      <AlertCircle className="h-5 w-5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
+            <p className="font-semibold">{dependent.name}</p>
+            <p className="text-sm text-gray-500">{dependent.relation}</p>
+            <p className="text-sm text-gray-500">Date of Birth: {dependent.dateOfBirth}</p>
+            <p className="text-sm text-gray-500">Phone: {dependent.mobileNumber}</p>
+            <p className="text-sm text-gray-500">Email: {dependent.email}</p>
           </div>
-        )}
+
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={() => handleEdit(dependent)}
+              className="text-blue-500 hover:text-blue-600 focus:outline-none"
+            >
+              <Edit className="h-5 w-5" />
+            </button>
+            <button
+              onClick={() => handleDelete(dependent.id)}
+              className="text-red-500 hover:text-red-600 focus:outline-none"
+            >
+              <Trash2 className="h-5 w-5" />
+            </button>
+            <button
+              onClick={() => toggleEmergencyContact(dependent.id)}
+              className={`${
+                dependent.isEmergencyContact ? 'text-red-500' : 'text-gray-500'
+              } hover:text-red-600 focus:outline-none`}
+            >
+              <AlertCircle className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+)}
 
         {/* Emergency SOS Button */}
         {!showForm && dependents.length > 0 && (

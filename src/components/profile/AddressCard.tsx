@@ -12,6 +12,7 @@ export default function AddressSection({ addresses, onChange }: Props) {
   const [newAddress, setNewAddress] = useState<Partial<Address>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
 
   const validateAddress = () => {
     const validationErrors: Record<string, string> = {};
@@ -79,21 +80,24 @@ export default function AddressSection({ addresses, onChange }: Props) {
     }
   };
 
+  const handleSelectAddress = (id: string) => {
+    setSelectedAddressId(id);
+  };
+
   return (
     <div className="p-8">
-    <div className="flex justify-between items-center mb-6">
-      <h2 className="text-2xl font-semibold text-gray-900">Delivery Addresses</h2>
-      {!showForm && addresses.length < 3 && (
-        <button
-          onClick={() => setShowForm(true)}
-          className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
-        >
-          <Plus className="h-5 w-5 mr-2" />
-          Add Address
-        </button>
-      )}
-    </div>
-
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-semibold text-gray-900">Delivery Addresses</h2>
+        {!showForm && addresses.length < 3 && (
+          <button
+            onClick={() => setShowForm(true)}
+            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+          >
+            <Plus className="h-5 w-5 mr-2" />
+            Add Address
+          </button>
+        )}
+      </div>
 
       {showForm && (
         <div className="mb-6 p-6 border rounded-lg bg-gray-50">
@@ -250,7 +254,11 @@ export default function AddressSection({ addresses, onChange }: Props) {
           {addresses.map((address) => (
             <div
               key={address.id}
-              className="p-6 border rounded-lg hover:shadow-md transition-shadow relative"
+              className={`p-6 border rounded-lg hover:shadow-md transition-shadow relative ${
+                selectedAddressId === address.id
+                  ? 'border-green-500 bg-green-50'
+                  : ''
+              }`}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
@@ -269,6 +277,13 @@ export default function AddressSection({ addresses, onChange }: Props) {
                   </div>
                 </div>
                 <div className="flex space-x-3">
+                  <input
+                    type="radio"
+                    name="addressSelect"
+                    checked={selectedAddressId === address.id}
+                    onChange={() => handleSelectAddress(address.id)}
+                    className="h-4 w-4 text-blue-600"
+                  />
                   <button
                     onClick={() => handleEdit(address.id)}
                     className="text-blue-500 hover:text-blue-700"

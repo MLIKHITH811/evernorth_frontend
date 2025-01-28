@@ -7,6 +7,9 @@ export const cardNumberRegex = /^[0-9]{16}$/;
 export const expiryDateRegex = /^(0[1-9]|1[0-2])\/([0-9]{2})$/;
 export const zipCodeRegex = /^[0-9]{5,6}$/;
 export const nameRegex = /^[a-zA-Z\s]{2,50}$/;
+export const bankAccountNumberRegex = /^\d{10,18}$/; 
+export const bankIFSCRegex = /^[A-Za-z]{4}\d{7}$/; 
+export const accountHolderNameRegex = /^[a-zA-Z\s]{3,50}$/;
 
 export const validationSchemas = {
   memberValidation: z.object({
@@ -36,12 +39,15 @@ export const validationSchemas = {
   }),
 
   paymentMethod: z.object({
-    type: z.enum(['credit', 'debit', 'upi']),
+    type: z.enum(['credit', 'debit', 'upi', 'bank']), // Added 'bank' option
     cardNumber: z.string().regex(cardNumberRegex, 'Invalid card number').optional(),
     nameOnCard: z.string().min(3, 'Name is required').optional(),
     cardType: z.enum(['visa', 'mastercard']).optional(),
     expiryDate: z.string().regex(expiryDateRegex, 'Invalid expiry date (MM/YY)').optional(),
     upiId: z.string().min(5, 'Invalid UPI ID').optional(),
+    bankAccountNumber: z.string().regex(bankAccountNumberRegex, 'Invalid bank account number (10-18 digits)').optional(),
+    bankIFSC: z.string().regex(bankIFSCRegex, 'Invalid bank IFSC code (India example: ABCD1234567)').optional(),
+    accountHolderName: z.string().regex(accountHolderNameRegex, 'Account holder name must be 3-50 characters, letters only').optional(),
   }),
 
   address: z.object({
