@@ -120,6 +120,9 @@ export default function HealthSection({ healthInfo, onChange }: Props) {
   const [showConditionDescription, setShowConditionDescription] = useState(false);
   const [selectedCondition, setSelectedCondition] = useState('');
   const [conditionDescription, setConditionDescription] = useState('');
+  const [showAllergyRemovePopup, setShowAllergyRemovePopup] = useState(false);
+  const [allergyToRemove, setAllergyToRemove] = useState<number | null>(null);
+  const [conditionToRemove, setConditionToRemove] = useState<number | null>(null);
 
   useEffect(() => {
     if (newCondition.length >= 3) {
@@ -192,6 +195,38 @@ export default function HealthSection({ healthInfo, onChange }: Props) {
       allergies: healthInfo.allergies.filter((_, i) => i !== index),
     });
   };
+  const handleConfirmRemoveAllergy = (index: number) => {
+    setShowAllergyRemovePopup(true);
+    setAllergyToRemove(index);
+  };
+  
+  const confirmRemoveAllergy = () => {
+    if (allergyToRemove !== null) {
+      handleRemoveAllergy(allergyToRemove);
+      setAllergyToRemove(null);
+    }
+    setShowAllergyRemovePopup(false);
+  };
+  const confirmRemoveCondition = (index: number) => {
+    setConditionToRemove(index);
+  };
+  
+  const cancelRemoveCondition = () => {
+    setConditionToRemove(null);
+  };
+  
+  const handleRemoveConfirmedCondition = () => {
+    if (conditionToRemove !== null) {
+      const condition = healthInfo.conditions[conditionToRemove];
+      const { [condition]: _, ...restDescriptions } = healthInfo.descriptions;
+      onChange({
+        ...healthInfo,
+        conditions: healthInfo.conditions.filter((_, i) => i !== conditionToRemove),
+        descriptions: restDescriptions,
+      });
+      setConditionToRemove(null);
+    }
+  };
 
   return (
     <div className="p-8">
@@ -247,33 +282,64 @@ export default function HealthSection({ healthInfo, onChange }: Props) {
 
             {/* Existing Conditions */}
             <div className="flex flex-wrap gap-2">
-              {healthInfo.conditions.map((condition, index) => (
-                <div
-                  key={index}
-                  className="group relative inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-blue-50 text-blue-700 border border-blue-200"
-                >
-                  {condition}
-                  {healthInfo.descriptions[condition] && (
-                    <AlertCircle className="h-4 w-4 ml-1 text-blue-600" />
-                  )}
-                  <button
-                    onClick={() => handleRemoveCondition(index)}
-                    className="ml-2 text-blue-600 hover:text-blue-800"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                  
-                  {/* Description Tooltip */}
-                  {healthInfo.descriptions[condition] && (
-                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 p-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
-                      {healthInfo.descriptions[condition]}
-                    </div>
-                  )}
-                </div>
-              ))}
+            {healthInfo.conditions.map((condition, index) => (
+    <div
+      key={index}
+      className="group relative inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-blue-50 text-blue-700 border border-blue-200"
+    >
+      {condition}
+      {healthInfo.descriptions[condition] && (
+        <AlertCircle className="h-4 w-4 ml-1 text-blue-600" />
+      )}
+      <button
+        onClick={() => confirmRemoveCondition(index)}
+        className="ml-2 text-blue-600 hover:text-blue-800"
+      >
+        <X className="h-4 w-4" />
+      </button>
+      
+      {/* Description Tooltip */}
+      {healthInfo.descriptions[condition] && (
+        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 p-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
+          {healthInfo.descriptions[condition]}
+        </div>
+      )}
+    </div>
+  ))}
             </div>
           </div>
         </div>
+
+
+        {/* Confirmation Modal for Removing Condition */}
+{conditionToRemove !== null && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div className="bg-white rounded-lg p-6 max-w-md w-full">
+      <h4 className="text-lg font-medium mb-4">Confirm Removal</h4>
+      <p className="mb-4">
+        Are you sure you want to remove the condition{' '}
+        <span className="font-semibold">
+          {healthInfo.conditions[conditionToRemove]}
+        </span>
+        ?
+      </p>
+      <div className="flex justify-end space-x-3">
+        <button
+          onClick={cancelRemoveCondition}
+          className="px-4 py-2 text-gray-700 hover:text-gray-900"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleRemoveConfirmedCondition}
+          className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+        >
+          Remove
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
         {/* Allergies */}
         <div className="bg-white rounded-lg p-6 border border-gray-200">
@@ -317,24 +383,51 @@ export default function HealthSection({ healthInfo, onChange }: Props) {
 
             {/* Existing Allergies */}
             <div className="flex flex-wrap gap-2">
-              {healthInfo.allergies.map((allergy, index) => (
+            {healthInfo.allergies.map((allergy, index) => (
                 <span
                   key={index}
                   className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-red-50 text-red-700 border border-red-200"
                 >
                   {allergy}
                   <button
-                    onClick={() => handleRemoveAllergy(index)}
+                    onClick={() => handleConfirmRemoveAllergy(index)}
                     className="ml-2 text-red-600 hover:text-red-800"
                   >
                     <X className="h-4 w-4" />
                   </button>
                 </span>
               ))}
+
             </div>
           </div>
         </div>
       </div>
+
+
+      {showAllergyRemovePopup && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div className="bg-white rounded-lg p-6 max-w-md w-full">
+      <h4 className="text-lg font-medium mb-4">
+        Are you sure you want to remove this allergy?
+      </h4>
+      <div className="flex justify-end space-x-3 mt-4">
+        <button
+          onClick={() => setShowAllergyRemovePopup(false)}
+          className="px-4 py-2 text-gray-700 hover:text-gray-900"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={confirmRemoveAllergy}
+          className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+        >
+          OK
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
 
       {/* Condition Description Modal */}
       {showConditionDescription && (
