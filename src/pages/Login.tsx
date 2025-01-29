@@ -1,20 +1,18 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { UserCheck, Mail, ArrowLeft } from "lucide-react";
+import { Mail, ArrowLeft } from "lucide-react";
 import Input from "../components/shared/Input";
 import Button from "../components/shared/Button";
 import toast from "react-hot-toast";
-import { validateMemberId, validateEmail } from "../utils/validation";
+import { validateEmail } from "../utils/validation";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    memberId: "",
     email: "",
     otp: "", // Added OTP field
   });
   const [errors, setErrors] = useState({
-    memberId: "",
     email: "",
     otp: "", // Added OTP error
   });
@@ -27,7 +25,6 @@ const Login: React.FC = () => {
 
   const validateForm = (): boolean => {
     const newErrors = {
-      memberId: validateMemberId(formData.memberId) || "",
       email: validateEmail(formData.email) || "",
       otp: otpSent && !formData.otp ? "OTP is required" : "", // OTP validation
     };
@@ -69,7 +66,6 @@ const Login: React.FC = () => {
     }
   };
   
-
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md space-y-6">
@@ -86,7 +82,7 @@ const Login: React.FC = () => {
             <p className="mt-1 text-gray-600">
               {otpSent
                 ? "Enter the OTP sent to your email."
-                : "Enter your details to receive an OTP"}
+                : "Enter your email to receive an OTP"}
             </p>
           </div>
         </div>
@@ -95,19 +91,6 @@ const Login: React.FC = () => {
           onSubmit={otpSent ? handleValidateOTP : handleGenerateOTP}
           className="space-y-4"
         >
-          <Input
-            icon={UserCheck}
-            label="Member ID"
-            placeholder="Enter your member ID"
-            value={formData.memberId}
-            onChange={(e) =>
-              setFormData({ ...formData, memberId: e.target.value })
-            }
-            error={errors.memberId}
-            required
-            disabled={otpSent} // Disable Member ID input after OTP is sent
-          />
-
           <Input
             icon={Mail}
             label="Email ID"

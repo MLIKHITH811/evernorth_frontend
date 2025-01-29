@@ -1,5 +1,4 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { UserCircle2 } from 'lucide-react';
 import evernorth from "../assets/evernorth.jpg"; 
 
@@ -9,10 +8,8 @@ const mockUser = {
 };
 
 function Welcome() {
-  const navigate = useNavigate();
-
   const heroImageStyle: React.CSSProperties = {
-    backgroundImage:`url(${evernorth})`,
+    backgroundImage: `url(${evernorth})`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
   };
@@ -24,7 +21,7 @@ function Welcome() {
           {/* Hero Image */}
           <div 
             className="h-64"
-            style={heroImageStyle} // Apply the correctly typed style object
+            style={heroImageStyle} 
           />
           
           {/* Content */}
@@ -36,10 +33,10 @@ function Welcome() {
             </div>
             <div className="text-center mt-6">
               <h1 className="text-4xl font-bold text-gray-800 mb-2">
-                Welcome ,  {mockUser.name}!
+                Welcome, {mockUser.name}!
               </h1>
               <p className="text-gray-600 mb-8">
-              A user-friendly platform to manage your health, track issues, and make payments
+                A user-friendly platform to manage your health, track issues, and make payments
               </p>
               <div className="bg-gradient-to-r from-teal-500 to-blue-600 p-6 rounded-xl inline-block">
                 <p className="text-teal-100 text-sm">MEMBER ID</p>
@@ -47,36 +44,12 @@ function Welcome() {
                   {mockUser.memberId}
                 </p>
               </div>
-              <div className="mt-12 grid gap-6 md:grid-cols-3">
-                {/* Login */}
-                <a 
-                  href="/login" 
-                  className="p-6 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer"
-                >
-                  <h3 className="font-semibold text-gray-800">Login</h3>
-                  <p className="text-gray-600 text-sm mt-2">
-                    Access your account
-                  </p>
-                </a>
-                {/* Profile */}
+              <div className="mt-6">
                 <a 
                   href="/profile-setup" 
-                  className="p-6 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer"
+                  className="px-6 py-3 bg-teal-600 text-white rounded-full shadow-md hover:bg-teal-700 transition-colors"
                 >
-                  <h3 className="font-semibold text-gray-800">Profile</h3>
-                  <p className="text-gray-600 text-sm mt-2">
-                    View and update your details
-                  </p>
-                </a>
-                {/* Explore Features */}
-                <a 
-                  href="/explore" 
-                  className="p-6 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer"
-                >
-                  <h3 className="font-semibold text-gray-800">Explore Features</h3>
-                  <p className="text-gray-600 text-sm mt-2">
-                    Discover all available services
-                  </p>
+                  Profile
                 </a>
               </div>
             </div>

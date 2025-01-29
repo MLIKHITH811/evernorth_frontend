@@ -212,19 +212,19 @@ export default function DependentSection({ dependents, onChange }: Props) {
   
     if (!isValid) return;
   
-    // Proceed with adding dependent
-    if (dependents.length >= 4) {
-      alert('Maximum 4 dependents allowed');
-      return;
-    }
+    // Proceed with editing the dependent (not adding new ones)
+    const updatedDependents = dependents.map(dependent => {
+      if (dependent.id === newDependent.id) {
+        // Update the specific dependent by matching the ID
+        return { ...dependent, ...newDependent };
+      }
+      return dependent;
+    });
   
-    const dependentToAdd = {
-      ...newDependent,
-      id: Date.now().toString(),
-      isEmergencyContact: false
-    };
+    // Update the list of dependents with the modified information
+    onChange(updatedDependents);
   
-    onChange([...dependents, dependentToAdd]);
+    // Close the form and reset the fields
     setShowForm(false);
     setNewDependent({});
     setErrors({
@@ -234,8 +234,8 @@ export default function DependentSection({ dependents, onChange }: Props) {
       mobileNumber: '',
       email: ''
     });
-  
   };
+  
 
   return (
     <div className="p-8">
