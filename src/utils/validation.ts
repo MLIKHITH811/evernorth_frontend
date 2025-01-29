@@ -155,10 +155,17 @@ export const validateProfile = (profile: UserProfile): ValidationErrors => {
   return errors;
 };
 
+
 export const validateMemberId = (memberId: string): string | null => {
   if (!memberId) return 'Member ID is required';
   if (memberId.length < 5) return 'Member ID must be at least 5 characters';
   if (!/^\d+$/.test(memberId)) return 'Member ID must contain only numbers';
+  return null;
+};
+
+export const validateEmail = (email: string): string | null => {
+  if (!email) return 'Email is required';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'Invalid email format';
   return null;
 };
 

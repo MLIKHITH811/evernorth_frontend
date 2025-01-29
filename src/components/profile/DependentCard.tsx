@@ -22,43 +22,80 @@ export default function DependentSection({ dependents, onChange }: Props) {
   const handleAdd = () => {
     let isValid = true;
     const newErrors: any = {};
-
+  
+    // Name validation
     if (!newDependent.name) {
       newErrors.name = 'Full Name is required';
       isValid = false;
     }
+  
+    // Relation validation
     if (!newDependent.relation) {
       newErrors.relation = 'Relation is required';
       isValid = false;
     }
+  
+    // Date of Birth validation
     if (!newDependent.dateOfBirth) {
       newErrors.dateOfBirth = 'Date of Birth is required';
       isValid = false;
+    } else {
+      const today = new Date();
+      const birthDate = new Date(newDependent.dateOfBirth);
+      const age = today.getFullYear() - birthDate.getFullYear();
+      const month = today.getMonth() - birthDate.getMonth();
+      if (age < 18 || (age === 18 && month < 0)) {
+        newErrors.dateOfBirth = 'You must be at least 18 years old.';
+        isValid = false;
+      }
     }
-    if (!newDependent.mobileNumber) {
-      newErrors.mobileNumber = 'Mobile Number is required';
+  
+    // Phone Number validation (regex for 10-digit number)
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!newDependent.mobileNumber || !phoneRegex.test(newDependent.mobileNumber)) {
+      newErrors.mobileNumber = 'Enter a valid 10-digit mobile number';
       isValid = false;
     }
-    if (!newDependent.email) {
-      newErrors.email = 'Email Address is required';
+  
+    // Email validation
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!newDependent.email || !emailRegex.test(newDependent.email)) {
+      newErrors.email = 'Enter a valid email address';
       isValid = false;
     }
-
+  
     setErrors(newErrors);
-
+  
     if (!isValid) return;
-
+  
+    // Proceed with adding or editing dependent
     if (dependents.length >= 4) {
       alert('Maximum 4 dependents allowed');
       return;
     }
-
+  
+    // Check if we are editing an existing dependent and handle the case for DOB validation
+    if (newDependent.id && newDependent.dateOfBirth) {
+      const existingDependent = dependents.find(dep => dep.id === newDependent.id);
+      if (existingDependent) {
+        const currentDOB = new Date(existingDependent.dateOfBirth);
+        const updatedDOB = new Date(newDependent.dateOfBirth);
+        // Only allow changes if the new DOB is valid (greater than or equal to 18 years)
+        const updatedAge = updatedDOB.getFullYear() - updatedDOB.getFullYear();
+        const updatedMonth = updatedDOB.getMonth() - updatedDOB.getMonth();
+        if (updatedAge < 18 || (updatedAge === 18 && updatedMonth < 0)) {
+          alert('You must be at least 18 years old.');
+          return;
+        }
+      }
+    }
+  
     const dependentToAdd = {
       ...newDependent,
       id: Date.now().toString(),
       isEmergencyContact: false
-    } as Dependent;
-
+    };
+  
     onChange([...dependents, dependentToAdd]);
     setShowForm(false);
     setNewDependent({});
@@ -70,7 +107,8 @@ export default function DependentSection({ dependents, onChange }: Props) {
       email: ''
     });
   };
-
+  
+  
   const handleDelete = (id: string) => {
     onChange(dependents.filter((dependent) => dependent.id !== id));
   };
@@ -87,17 +125,30 @@ export default function DependentSection({ dependents, onChange }: Props) {
   const handleEmergencySOS = () => {
     const emergencyContact = dependents.find(dep => dep.isEmergencyContact);
     if (emergencyContact) {
-      alert(`Sending emergency alert to ${emergencyContact.name} at ${emergencyContact.mobileNumber}`);
+      alert(`Sending emergency alert to ${emergencyContact.name} at ${emergencyContact.email}`);
     } else {
       alert('Please set an emergency contact first');
     }
   };
 
   const handleEdit = (dependent: Dependent) => {
+    const today = new Date();
+    const birthDate = new Date(dependent.dateOfBirth);
+    const age = today.getFullYear() - birthDate.getFullYear();
+    const month = today.getMonth() - birthDate.getMonth();
+    
+    // Check if the dependent is 18 or older
+    if (age < 18 || (age === 18 && month < 0)) {
+      alert('You must be at least 18 years old to edit this dependent.');
+      return;  // Prevent editing if the age is under 18
+    }
+  
+    // Proceed with setting up the editing state if valid
     setEditingDependent(dependent);
     setNewDependent({ ...dependent });
     setShowForm(true);
   };
+  
   
   const handleCancel = () => {
     setEditingDependent(null);
@@ -113,22 +164,77 @@ export default function DependentSection({ dependents, onChange }: Props) {
   };
 
   const handleSaveEdit = () => {
-    if (editingDependent) {
-      const updatedDependents = dependents.map(dep =>
-        dep.id === editingDependent.id ? { ...dep, ...newDependent } : dep
-      );
-      onChange(updatedDependents);
-      setEditingDependent(null);
-      setNewDependent({});
-      setShowForm(false);
-      setErrors({
-        name: '',
-        relation: '',
-        dateOfBirth: '',
-        mobileNumber: '',
-        email: ''
-      });
+    let isValid = true;
+    const newErrors: any = {};
+  
+    // Name validation
+    if (!newDependent.name) {
+      newErrors.name = 'Full Name is required';
+      isValid = false;
     }
+  
+    // Relation validation
+    if (!newDependent.relation) {
+      newErrors.relation = 'Relation is required';
+      isValid = false;
+    }
+  
+    // Date of Birth validation
+    if (!newDependent.dateOfBirth) {
+      newErrors.dateOfBirth = 'Date of Birth is required';
+      isValid = false;
+    } else {
+      const today = new Date();
+      const birthDate = new Date(newDependent.dateOfBirth);
+      const age = today.getFullYear() - birthDate.getFullYear();
+      const month = today.getMonth() - birthDate.getMonth();
+      if (age < 18 || (age === 18 && month < 0)) {
+        newErrors.dateOfBirth = 'You must be at least 18 years old.';
+        isValid = false;
+      }
+    }
+  
+    // Phone Number validation (regex for 10-digit number)
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!newDependent.mobileNumber || !phoneRegex.test(newDependent.mobileNumber)) {
+      newErrors.mobileNumber = 'Enter a valid 10-digit mobile number';
+      isValid = false;
+    }
+  
+    // Email validation
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!newDependent.email || !emailRegex.test(newDependent.email)) {
+      newErrors.email = 'Enter a valid email address';
+      isValid = false;
+    }
+  
+    setErrors(newErrors);
+  
+    if (!isValid) return;
+  
+    // Proceed with adding dependent
+    if (dependents.length >= 4) {
+      alert('Maximum 4 dependents allowed');
+      return;
+    }
+  
+    const dependentToAdd = {
+      ...newDependent,
+      id: Date.now().toString(),
+      isEmergencyContact: false
+    };
+  
+    onChange([...dependents, dependentToAdd]);
+    setShowForm(false);
+    setNewDependent({});
+    setErrors({
+      name: '',
+      relation: '',
+      dateOfBirth: '',
+      mobileNumber: '',
+      email: ''
+    });
+  
   };
 
   return (
@@ -189,17 +295,39 @@ export default function DependentSection({ dependents, onChange }: Props) {
             </div>
 
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">Date of Birth</label>
-              <input
-                type="date"
-                value={newDependent.dateOfBirth || ''}
-                onChange={(e) =>
-                  setNewDependent({ ...newDependent, dateOfBirth: e.target.value })
-                }
-                className={`w-full rounded-lg border ${errors.dateOfBirth ? 'border-red-500' : 'border-gray-300'} shadow-sm py-3 px-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
-              />
-              {errors.dateOfBirth && <p className="text-xs text-red-500">{errors.dateOfBirth}</p>}
-            </div>
+  <label className="block text-sm font-medium text-gray-700">Date of Birth</label>
+  <input
+    type="date"
+    value={newDependent.dateOfBirth || ''}
+    onChange={(e) => {
+      const dob = e.target.value;
+      setNewDependent({ ...newDependent, dateOfBirth: dob });
+
+      // Age validation logic
+      const today = new Date();
+      const birthDate = new Date(dob);
+      const age = today.getFullYear() - birthDate.getFullYear();
+      const month = today.getMonth() - birthDate.getMonth();
+
+      // Check if the age is less than 18 years
+      if (age < 18 || (age === 18 && month < 0)) {
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          dateOfBirth: 'You must be at least 18 years old.',
+        }));
+      } else {
+        // Clear the error if valid
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          dateOfBirth: '',
+        }));
+      }
+    }}
+    className={`w-full rounded-lg border ${errors.dateOfBirth ? 'border-red-500' : 'border-gray-300'} shadow-sm py-3 px-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
+  />
+  {errors.dateOfBirth && <p className="text-xs text-red-500">{errors.dateOfBirth}</p>}
+</div>
+
 
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700">Mobile Number</label>

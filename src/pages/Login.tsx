@@ -1,53 +1,35 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { UserCheck, Calendar, Phone, ArrowLeft } from "lucide-react";
+import { UserCheck, Mail, ArrowLeft } from "lucide-react";
 import Input from "../components/shared/Input";
 import Button from "../components/shared/Button";
-import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
-import axios from "axios";
-import {
-  validateMemberId,
-  validateDOB,
-  validateMobile,
-  validateOTP,
-} from "../utils/validation";
+import { validateMemberId, validateEmail } from "../utils/validation";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
   const [formData, setFormData] = useState({
     memberId: "",
-    dateOfBirth: "",
-    contactNo: "",
-    otp: "",
+    email: "",
+    otp: "", // Added OTP field
   });
   const [errors, setErrors] = useState({
     memberId: "",
-    dateOfBirth: "",
-    contactNo: "",
-    otp: "",
+    email: "",
+    otp: "", // Added OTP error
   });
-  const [showOTP, setShowOTP] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [timer, setTimer] = useState(0);
+  const [otpSent, setOtpSent] = useState(false); // Track OTP sent status
+  const [generatedOtp, setGeneratedOtp] = useState<string | null>(null); // Store generated OTP
 
-  useEffect(() => {
-    let interval: any;
-    if (timer > 0) {
-      interval = setInterval(() => {
-        setTimer((prev) => prev - 1);
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [timer]);
+  // Hardcoded OTP for validation
+  const hardcodedOtp = "123456"; // Replace with your desired OTP
 
   const validateForm = (): boolean => {
     const newErrors = {
       memberId: validateMemberId(formData.memberId) || "",
-      dateOfBirth: validateDOB(formData.dateOfBirth) || "",
-      contactNo: validateMobile(formData.contactNo) || "",
-      otp: showOTP ? validateOTP(formData.otp) || "" : "",
+      email: validateEmail(formData.email) || "",
+      otp: otpSent && !formData.otp ? "OTP is required" : "", // OTP validation
     };
 
     setErrors(newErrors);
@@ -60,54 +42,33 @@ const Login: React.FC = () => {
 
     setLoading(true);
     try {
+      // Simulate OTP generation (hardcoded OTP)
+      setGeneratedOtp(hardcodedOtp);
 
-      const response = await axios.post("http://localhost:8081/users/generate-otp", {
-        memberId: formData.memberId,
-        dateOfBirth: formData.dateOfBirth,
-        contactNo: formData.contactNo,
-      });
+      toast.success("OTP sent successfully to your email");
 
-      if (response.status === 200) {
-        setShowOTP(true);
-        setTimer(30);
-        toast.success("OTP sent successfully!");
-      } else {
-        toast.error(`Unexpected status code: ${response.status}`);
-      }
+      // Mark OTP as sent
+      setOtpSent(true);
     } catch (error: any) {
-      toast.error(
-        error?.response?.data?.message || `Failed to generate OTP.`
-      );
+      toast.error("Failed to generate OTP.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleValidate = async (e: React.FormEvent) => {
+  const handleValidateOTP = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) return;
-
-    setLoading(true);
-    try {
-
-      const response = await axios.post("http://localhost:8081/users/validate-otp", {
-        memberId: formData.memberId,
-        otp: formData.otp,
-      });
-
-      if (response.status === 200) {
-        login();
-        navigate("/profile-setup");
-        toast.success("Validation successful!");
-      } else {
-        toast.error("Invalid OTP. Please try again.");
-      }
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Invalid OTP. Please try again.");
-    } finally {
-      setLoading(false);
+  
+    // Check if OTP entered by the user matches the generated OTP
+    if (formData.otp === generatedOtp) {
+      toast.success("OTP validated successfully.");
+      navigate("/welcome"); // Navigate to the welcome page after successful validation
+    } else {
+      // Display an error message if the OTP does not match
+      setErrors({ ...errors, otp: "Invalid OTP. Please try again." });
     }
   };
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
@@ -119,81 +80,61 @@ const Login: React.FC = () => {
             onClick={() => navigate("/")}
           />
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Member Validation</h1>
-            <p className="mt-1 text-gray-600">Please verify your identity to continue</p>
+            <h1 className="text-2xl font-bold text-gray-900">
+              {otpSent ? "OTP Validation" : "Login"}
+            </h1>
+            <p className="mt-1 text-gray-600">
+              {otpSent
+                ? "Enter the OTP sent to your email."
+                : "Enter your details to receive an OTP"}
+            </p>
           </div>
         </div>
 
-        <form onSubmit={showOTP ? handleValidate : handleGenerateOTP} className="space-y-4">
+        <form
+          onSubmit={otpSent ? handleValidateOTP : handleGenerateOTP}
+          className="space-y-4"
+        >
           <Input
             icon={UserCheck}
             label="Member ID"
             placeholder="Enter your member ID"
             value={formData.memberId}
-            onChange={(e) => setFormData({ ...formData, memberId: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, memberId: e.target.value })
+            }
             error={errors.memberId}
             required
-            disabled={showOTP}
+            disabled={otpSent} // Disable Member ID input after OTP is sent
           />
 
           <Input
-            icon={Calendar}
-            label="Date of Birth"
-            type="date"
-            value={formData.dateOfBirth}
-            onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
-            error={errors.dateOfBirth}
+            icon={Mail}
+            label="Email ID"
+            type="email"
+            placeholder="Enter your email"
+            value={formData.email}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            error={errors.email}
             required
-            disabled={showOTP}
+            disabled={otpSent} // Disable Email input after OTP is sent
           />
 
-          <Input
-            icon={Phone}
-            label="Mobile Number"
-            type="tel"
-            placeholder="Enter 10-digit mobile number"
-            value={formData.contactNo}
-            onChange={(e) => setFormData({ ...formData, contactNo: e.target.value })}
-            error={errors.contactNo}
-            required
-            disabled={showOTP}
-          />
-
-          {showOTP && (
-            <div className="space-y-2">
-              <Input
-                label="OTP"
-                type="text"
-                placeholder="Enter 6-digit OTP"
-                value={formData.otp}
-                onChange={(e) => setFormData({ ...formData, otp: e.target.value })}
-                error={errors.otp}
-                required
-                maxLength={6}
-              />
-              {timer > 0 ? (
-                <p className="text-sm text-gray-600">Resend OTP in {timer} seconds</p>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setTimer(30);
-                    toast.success("New OTP sent successfully!");
-                  }}
-                  className="text-sm text-indigo-600 hover:text-indigo-500"
-                >
-                  Resend OTP
-                </button>
-              )}
-            </div>
+          {otpSent && (
+            <Input
+              icon={Mail}
+              label="OTP"
+              type="text"
+              placeholder="Enter OTP"
+              value={formData.otp}
+              onChange={(e) => setFormData({ ...formData, otp: e.target.value })}
+              error={errors.otp}
+              required
+            />
           )}
 
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={loading || (showOTP && timer === 0)}
-          >
-            {loading ? "Processing..." : showOTP ? "Validate OTP" : "Generate OTP"}
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? "Sending OTP..." : otpSent ? "Validate OTP" : "Generate OTP"}
           </Button>
         </form>
       </div>

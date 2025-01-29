@@ -376,43 +376,18 @@ export default function Signup() {
     return isValid;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (event) => {
+    event.preventDefault();
   
-    if (!validateForm()) {
-      toast.error("Please fix the errors in the form");
-      return;
-    }
-  
-    setIsSubmitting(true);
-  
-    try {
-      // Prepare the data in the required format
-      const payload = {
-        full_name: formData.fullName,
-        email_id: formData.email,
-        contact_no: formData.mobile,
-        date_of_birth: formData.dob,
-      };
-  
-      // API call to submit the form data
-      const response = await axios.post(
-        "http://localhost:8081/users/create",
-        payload
-      );
-      if (response.status === 201) {
-        toast.success("Account created successfully!");
-        navigate("/welcome"); // Updated to navigate to welcome.tsx
-      } else {
-        // Handle non-200 status codes
-        toast.error(`Failed to create account. Status Code: ${response.status}`);
-      }
-    } catch (error) {
-      toast.error("Something went wrong. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Assuming the formData contains the user's signup data
+    localStorage.setItem('profileData', JSON.stringify(formData)); // Save data to localStorage
+    
+    // Proceed to redirect or notify success
+    toast.success("Account created successfully!");
+    navigate('/profile'); // Assuming you're using a navigation hook or `react-router`
   };
+  
+  
   
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
